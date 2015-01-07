@@ -1,0 +1,182 @@
+\documentclass[12pt,utf8,notheorems,compress,t]{beamer}
+
+\usepackage[ngerman]{babel}
+
+\usepackage{ragged2e}
+
+\usepackage[protrusion=true,expansion=false]{microtype}
+
+\setlength\parskip{\medskipamount}
+\setlength\parindent{0pt}
+
+\title{Dokumentverwaltung \\ mit Git und GitHub}
+\author[LUGA]{Ingo Blechschmidt \\ \texttt{<iblech@web.de>}}
+\date{Linux User Group Augsburg e.\,V. \\ 7. Januar 2015}
+
+\usetheme{Warsaw}
+\usecolortheme{seahorse}
+%\usefonttheme{serif}
+%\usepackage{mathpazo}
+\usepackage{kurier}
+\useinnertheme{rectangles}
+\setbeamercovered{invisible}
+
+\setbeamercolor{structure}{fg=purple}
+
+% aus beamerouterthemeshadow.sty
+\makeatletter
+\setbeamertemplate{frametitle}
+{%
+  \nointerlineskip%
+  \vskip-2pt%
+  \hbox{\leavevmode
+    \advance\beamer@leftmargin by -12bp%
+    \advance\beamer@rightmargin by -12bp%
+    \beamer@tempdim=\textwidth%
+    \advance\beamer@tempdim by \beamer@leftmargin%
+    \advance\beamer@tempdim by \beamer@rightmargin%
+    \hskip-\Gm@lmargin\hbox{%
+      \setbox\beamer@tempbox=\hbox{\begin{minipage}[b]{\paperwidth}%
+          \vbox{}\vskip-.75ex%
+          \leftskip0.3cm%
+          \rightskip0.3cm plus1fil\leavevmode
+          \centering%
+          \insertframetitle%
+          \ifx\insertframesubtitle\@empty%
+            \strut\par%
+          \else
+            \par{\usebeamerfont*{framesubtitle}{\usebeamercolor[fg]{framesubtitle}\insertframesubtitle}\strut\par}%
+          \fi%
+          \nointerlineskip
+          \vbox{}%
+          \end{minipage}}%
+      \beamer@tempdim=\ht\beamer@tempbox%
+      \advance\beamer@tempdim by 2pt%
+      \begin{pgfpicture}{0pt}{0pt}{\paperwidth}{\beamer@tempdim}
+        \usebeamercolor{frametitle right}
+        \pgfpathrectangle{\pgfpointorigin}{\pgfpoint{\paperwidth}{\beamer@tempdim}}
+        \pgfusepath{clip}
+        \pgftext[left,base]{\pgfuseshading{beamer@frametitleshade}}
+      \end{pgfpicture}
+      \hskip-\paperwidth%
+      \box\beamer@tempbox%
+    }%
+    \hskip-\Gm@rmargin%
+  }%
+  \nointerlineskip
+    \vskip-0.2pt
+    \hbox to\textwidth{\hskip-\Gm@lmargin\hskip-\Gm@rmargin}
+    \vskip-2pt
+}
+\makeatother
+
+\setbeamertemplate{title page}[default][colsep=-1bp,rounded=false,shadow=false,bg=white]
+
+\setbeamertemplate{navigation symbols}{}
+
+\newcommand{\backupstart}{
+  \newcounter{framenumberpreappendix}
+  \setcounter{framenumberpreappendix}{\value{framenumber}}
+}
+\newcommand{\backupend}{
+  \addtocounter{framenumberpreappendix}{-\value{framenumber}}
+  \addtocounter{framenumber}{\value{framenumberpreappendix}} 
+}
+
+\newcommand*\oldmacro{}%
+\let\oldmacro\insertshorttitle%
+\renewcommand*\insertshorttitle{%
+  \oldmacro\hfill\insertframenumber\,/\,\inserttotalframenumber\hfill}
+
+\newcommand{\hil}[1]{{\usebeamercolor[fg]{item}{\textbf{#1}}}}
+
+\newcommand{\img}[2]{\begin{center}\includegraphics[scale=#1]{#2}\end{center}}
+\newcommand{\imageslide}[3]{\frame{\frametitle{#1}\img{#2}{#3}}}
+
+\newcommand{\floatbox}[3]{%
+  \raisebox{0pt}[0pt][0pt]{%
+    \begin{picture}(0,0)(#1,#2)#3\end{picture}%
+  }%
+}
+
+\begin{document}
+
+\frame{\titlepage}
+
+\section{Versionskontrolle}
+\frame{\frametitle{Das 21. Jahrhundert}
+  \centering
+  \vfill
+  
+  \begin{minipage}{0.6\textwidth}
+    \texttt{Bericht.odt} \\
+    \texttt{Bericht\_2015-01-05.odt} \\
+    \texttt{Bericht\_final.odt} \\
+    \texttt{Bericht\_final\_nach\_Korrektur.odt} \\
+    \texttt{Bericht\_ganz\_fertig.odt} \\
+    \texttt{Bericht\_Abgabeversion.odt} \\
+    \texttt{Bericht\_Abgabeversion\_korr.odt}
+  \end{minipage}
+  \vfill
+  
+  \hil{Das muss nicht sein!}
+  \vfill
+}
+
+\frame{\frametitle{Was ermöglichen Versionskontrollsysteme?}
+  \begin{itemize}
+    \item Verhinderung von Dateinamenswirrwarr
+    \item Überblick über die zeitliche Entwicklung eines Texts
+    \item Rückkehr zu früheren Dateiversionen
+    \item Paralleles Arbeiten an verschiedenen Textvarianten
+    \item Einfache Zusammenarbeit im Team
+    \item Analysemöglichkeiten, um Bugs einzugrenzen \\ (bei Software-Projekten)
+  \end{itemize}
+}
+
+\frame{\frametitle{Grundlegende Konzepte}
+  \begin{itemize}
+    \item Das \hil{Arbeitsverzeichnis} enthält nur eine bestimmte Version (meistens die
+    neueste).
+    \item Die vollständige Versionshierarchie liegt in einem separaten \hil{Repository}.
+    \item Mehrere Änderungen werden zu einzelnen \hil{Commits} zusammengefasst.
+    \item Eigene Commits können an Teammitglieder \hil{gepusht} werden.
+    \item Umgekehrt \hil{pullt} man fremde Änderungen.
+  \end{itemize}
+}
+
+
+\section{Git}
+
+\frame{\frametitle{Auftritt Git}
+  \begin{itemize}
+    \item Git ist ein modernes, dezentrales Versionskontrollsystem.
+    \item Gestartet von Linus Torvalds 2005.
+    \item De-facto-Standard in der Open-Source-Welt.
+    \item Alternativen: Bazaar, Darcs, Mercurial, Subversion
+  \end{itemize}
+
+  Die wichtigsten Befehle:
+  \begin{itemize}
+    \item \texttt{git init}
+    \item \texttt{git commit}
+    \item \texttt{git pull --rebase}
+    \item \texttt{git push}
+    \item \texttt{gitk} oder \texttt{gitg}
+  \end{itemize}
+}
+
+
+\section{GitHub}
+
+\frame{\frametitle{GitHub}
+  \begin{itemize}
+    \item Viele Open-Source-Projekte verwalten ihre Repositories auf GitHub.
+    \item Gestartet 2008.
+    \item Kostenlos für öffentliche Projekte.
+  \end{itemize}
+
+  \begin{center}\hil{Live-Demo}\end{center}
+}
+
+\end{document}
